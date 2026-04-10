@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPTI · 运动人格测试</title>
+<meta name="description" content="每种运动方式都是一种存在方式。SPTI 通过三个维度，找到最像你的那项运动。">
+<meta property="og:title" content="SPTI · 运动人格测试">
+<meta property="og:description" content="你是羽毛球还是游泳？每种运动方式都是一种存在方式。">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f5f5f3;
+    --text: #1a1a1a;
+    --text2: #6b6b6b;
+    --text3: #9a9a9a;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.2);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141414;
+      --bg2: #1f1f1f;
+      --text: #f0f0f0;
+      --text2: #9a9a9a;
+      --text3: #666666;
+      --border: rgba(255,255,255,0.1);
+      --border2: rgba(255,255,255,0.2);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 1.25rem 4rem; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 0 2rem;
+  }
+  .brand { font-size: 12px; letter-spacing: 0.22em; font-weight: 600; color: var(--text); }
+  .ptxt { font-size: 11px; color: var(--text2); letter-spacing: 0.05em; }
+  .divider { height: 0.5px; background: var(--border); margin-bottom: 2.5rem; }
+
+  .scr { display: none; }
+  .scr.on { display: block; }
+
+  /* Intro */
+  .hero {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 2rem; margin-bottom: 3rem; align-items: center;
+  }
+  @media (max-width: 540px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-art { max-height: 200px; overflow: hidden; }
+  }
+  .hero-art {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden;
+  }
+  .hero-h {
+    font-size: 26px; font-weight: 600; color: var(--text);
+    line-height: 1.25; margin-bottom: 0.9rem;
+  }
+  .hero-p { font-size: 13px; color: var(--text2); line-height: 1.75; margin-bottom: 1.75rem; }
+  .axis-list { margin-bottom: 1.75rem; }
+  .axis-item {
+    display: flex; align-items: baseline; gap: 9px;
+    margin-bottom: 8px; font-size: 12px; color: var(--text2);
+  }
+  .axis-num { font-size: 10px; font-weight: 600; color: var(--text3); min-width: 14px; }
+  .go-btn {
+    padding: 12px 26px; background: var(--text); color: var(--bg);
+    border: none; border-radius: var(--radius-md); font-size: 14px;
+    cursor: pointer; font-family: inherit; font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .go-btn:hover { opacity: 0.8; }
+
+  /* Quiz */
+  .prog-bar { height: 1px; background: var(--border); margin-bottom: 2.5rem; }
+  .prog-fill { height: 100%; background: var(--text); transition: width 0.45s; }
+  .q-art {
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); overflow: hidden; margin-bottom: 1.75rem;
+  }
+  .q-num { font-size: 11px; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 1rem; font-weight: 500; }
+  .q-body { font-size: 19px; font-weight: 600; color: var(--text); line-height: 1.5; margin-bottom: 0.5rem; }
+  @media (max-width: 540px) { .q-body { font-size: 16px; } }
+  .q-hint { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 2rem; }
+  .opts { display: flex; flex-direction: column; gap: 8px; margin-bottom: 2.5rem; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px; border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); background: var(--bg);
+    cursor: pointer; font-family: inherit; transition: all 0.12s; text-align: left;
+    width: 100%;
+  }
+  .opt:hover { border-color: var(--border2); background: var(--bg2); }
+  .opt.sel { border-color: var(--text); background: var(--bg2); }
+  .opt-key {
+    font-size: 11px; font-weight: 600; color: var(--text2);
+    padding-top: 2px; min-width: 14px; letter-spacing: 0.05em; flex-shrink: 0;
+  }
+  .opt.sel .opt-key { color: var(--text); }
+  .opt-t { font-size: 14px; color: var(--text); line-height: 1.55; }
+  .opt-s { font-size: 12px; color: var(--text3); margin-top: 3px; line-height: 1.5; }
+  .nav { display: flex; justify-content: space-between; }
+  .nbtn {
+    padding: 10px 20px; border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm); background: transparent;
+    color: var(--text); font-size: 13px; cursor: pointer; font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .nbtn:disabled { opacity: 0.2; cursor: default; }
+  .nbtn:hover:not(:disabled) { opacity: 0.7; }
+  .nbtn.fwd { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .nbtn.fwd:hover:not(:disabled) { opacity: 0.85; }
+
+  /* Result */
+  .r-hero {
+    display: grid; grid-template-columns: 220px 1fr;
+    gap: 2rem; margin-bottom: 2rem; align-items: start;
+  }
+  @media (max-width: 540px) {
+    .r-hero { grid-template-columns: 1fr; }
+  }
+  .r-art { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .r-sport { font-size: 10px; letter-spacing: 0.2em; color: var(--text2); margin-bottom: 0.5rem; font-weight: 600; }
+  .r-name { font-size: 34px; font-weight: 700; color: var(--text); line-height: 1.05; margin-bottom: 0.4rem; }
+  .r-sub { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.6; }
+  .axes { display: flex; flex-direction: column; gap: 9px; }
+  .ax-row { display: grid; grid-template-columns: 58px 1fr 58px; gap: 6px; align-items: center; }
+  .ax-l { font-size: 11px; color: var(--text2); text-align: right; }
+  .ax-r { font-size: 11px; color: var(--text2); }
+  .ax-tr { height: 3px; background: var(--border); border-radius: 2px; }
+  .ax-fi { height: 100%; border-radius: 2px; transition: width 0.8s; }
+  .desc-block {
+    border-top: 0.5px solid var(--border);
+    padding-top: 1.75rem; margin-bottom: 1.75rem;
+  }
+  .desc-p { font-size: 14px; line-height: 1.85; color: var(--text); margin-bottom: 1rem; }
+  .desc-p:last-child { margin-bottom: 0; }
+  .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+  @media (max-width: 400px) { .dual { grid-template-columns: 1fr; } }
+  .dc { padding: 1rem 1.1rem; border: 0.5px solid var(--border); border-radius: var(--radius-md); }
+  .dc-l { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--text2); margin-bottom: 6px; }
+  .dc-t { font-size: 13px; color: var(--text); line-height: 1.6; }
+  .traits { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 2rem; }
+  .trait {
+    font-size: 12px; padding: 4px 11px; border-radius: 99px;
+    border: 0.5px solid var(--border); color: var(--text2);
+  }
+  .share-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+  .share-btn {
+    flex: 1; padding: 12px; border: 0.5px solid var(--border2);
+    border-radius: var(--radius-md); background: transparent;
+    color: var(--text); font-size: 13px; cursor: pointer; font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .share-btn:hover { opacity: 0.7; }
+  .retry-btn {
+    width: 100%; padding: 13px; border: 0.5px solid var(--border);
+    border-radius: var(--radius-md); background: transparent;
+    color: var(--text2); font-size: 13px; cursor: pointer; font-family: inherit;
+    letter-spacing: 0.05em; transition: opacity 0.15s;
+  }
+  .retry-btn:hover { opacity: 0.6; }
+
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); padding: 10px 20px;
+    border-radius: 99px; font-size: 13px; opacity: 0;
+    transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">S P T I</div>
+    <div class="ptxt" id="ptxt"></div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- Intro -->
+  <div id="s0" class="scr on">
+    <div class="hero">
+      <div class="hero-art" id="ia"></div>
+      <div class="hero-copy">
+        <div class="hero-h">每种运动方式<br>都是一种存在方式</div>
+        <div class="hero-p">SPTI 从三个维度测量你与他人、压力、节奏之间的关系。最终你会对应一种运动——不是因为你打那项运动，而是因为你们的运作方式相似。</div>
+        <div class="axis-list">
+          <div class="axis-item"><span class="axis-num">01</span>连接方式 · 你如何与他人产生关联</div>
+          <div class="axis-item"><span class="axis-num">02</span>压力结构 · 你在压力下如何运转</div>
+          <div class="axis-item"><span class="axis-num">03</span>节奏模式 · 你偏好的时间与能量节奏</div>
+        </div>
+        <button class="go-btn" id="sBtn">开始测试</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div id="s1" class="scr">
+    <div class="prog-bar"><div class="prog-fill" id="pf" style="width:0%"></div></div>
+    <div class="q-art" id="qa"></div>
+    <div class="q-num" id="qn">01 / 15</div>
+    <div class="q-body" id="qb"></div>
+    <div class="q-hint" id="qh"></div>
+    <div class="opts" id="oc"></div>
+    <div class="nav">
+      <button class="nbtn" id="pBtn" disabled>← 返回</button>
+      <button class="nbtn fwd" id="nBtn" disabled>继续 →</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="s2" class="scr">
+    <div id="rc"></div>
+    <div class="share-row">
+      <button class="share-btn" id="shareBtn">分享链接</button>
+      <button class="share-btn" id="copyBtn">复制结果文字</button>
+    </div>
+    <button class="retry-btn" id="rBtn">— 重新测试 —</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── SVG helpers ────────────────────────────────────────────────
+function svg(w, h, body) {
+  return `<svg width="100%" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${body}</svg>`;
+}
+
+function introArt() {
+  const spots = [
+    [60,60,18,'#AFA9EC'],[180,40,12,'#5DCAA5'],[300,70,22,'#EF9F27'],
+    [380,45,15,'#ED93B1'],[100,160,10,'#85B7EB'],[220,150,20,'#F0997B'],
+    [340,170,14,'#97C459'],[50,260,16,'#CECBF6'],[170,240,11,'#9FE1CB'],
+    [290,250,19,'#FAC775'],[390,240,13,'#F4C0D1'],
+  ];
+  let s = `<rect width="400" height="320" fill="#F1EFE8"/>`;
+  s += `<line x1="0" y1="160" x2="400" y2="160" stroke="#D3D1C7" stroke-width="0.5"/>`;
+  s += `<line x1="200" y1="0" x2="200" y2="320" stroke="#D3D1C7" stroke-width="0.5"/>`;
+  spots.forEach(([x,y,r,c]) => {
+    s += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="0.7"/>`;
+    s += `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${c}" stroke-width="0.5" opacity="0.4"/>`;
+  });
+  s += `<line x1="60" y1="60" x2="100" y2="160" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+  s += `<line x1="180" y1="40" x2="170" y2="240" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+  s += `<line x1="300" y1="70" x2="290" y2="250" stroke="#B4B2A9" stroke-width="0.5" stroke-dasharray="3,3"/>`;
+  s += `<text x="200" y="175" text-anchor="middle" font-size="9" fill="#888780" letter-spacing="3" font-family="sans-serif">S P T I</text>`;
+  return svg(400, 320, s);
+}
+
+function qArt(ax, i) {
+  const cfg = {
+    CN: { bg: '#EEEDFE', c: '#7F77DD', label: '连接方式' },
+    PS: { bg: '#E1F5EE', c: '#1D9E75', label: '压力结构' },
+    RP: { bg: '#FAEEDA', c: '#BA7517', label: '节奏模式' },
+  };
+  const { bg, c, label } = cfg[ax] || cfg.CN;
+  let s = `<rect width="680" height="72" fill="${bg}"/>`;
+  for (let k = 0; k < 9; k++) {
+    const x = 40 + k * 70 + (i % 3) * 12;
+    const y = 12 + (k % 3) * 16;
+    const r = 4 + (k % 4) * 3;
+    s += `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="${0.15 + k * 0.07}"/>`;
+  }
+  for (let k = 0; k < 6; k++) {
+    const x1 = 60 + k * 100;
+    const x2 = x1 + 40 + (i % 4) * 10;
+    s += `<line x1="${x1}" y1="${36 + (k % 2) * 10}" x2="${x2}" y2="${56 - (k % 3) * 8}" stroke="${c}" stroke-width="0.5" opacity="0.4"/>`;
+  }
+  s += `<text x="24" y="47" font-size="10" fill="${c}" opacity="0.9" font-family="sans-serif" letter-spacing="1">${label}</text>`;
+  return svg(680, 72, s);
+}
+
+function typeArt(code) {
+  const palettes = {
+    badminton: { bg:'#EEEDFE', c1:'#AFA9EC', c2:'#7F77DD', c3:'#3C3489' },
+    volleyball: { bg:'#FAEEDA', c1:'#FAC775', c2:'#EF9F27', c3:'#633806' },
+    pingpong:   { bg:'#E1F5EE', c1:'#9FE1CB', c2:'#1D9E75', c3:'#04342C' },
+    swimming:   { bg:'#E6F1FB', c1:'#85B7EB', c2:'#378ADD', c3:'#042C53' },
+    climbing:   { bg:'#FAECE7', c1:'#F5C4B3', c2:'#D85A30', c3:'#4A1B0C' },
+    golf:       { bg:'#EAF3DE', c1:'#C0DD97', c2:'#639922', c3:'#173404' },
+    basketball: { bg:'#FBEAF0', c1:'#F4C0D1', c2:'#D4537E', c3:'#4B1528' },
+    pickleball: { bg:'#F1EFE8', c1:'#D3D1C7', c2:'#888780', c3:'#2C2C2A' },
+  };
+  const p = palettes[code] || palettes.pickleball;
+
+  const draws = {
+    badminton: () => {
+      let s = '';
+      for (let i = 0; i < 16; i++) {
+        const a = i * (Math.PI / 8), r = 150;
+        const x = (200 + r * Math.cos(a)).toFixed(1), y = (200 + r * Math.sin(a)).toFixed(1);
+        s += `<line x1="200" y1="200" x2="${x}" y2="${y}" stroke="${p.c1}" stroke-width="0.5" opacity="0.4"/>`;
+        s += `<circle cx="${x}" cy="${y}" r="6" fill="${p.c1}" opacity="0.6"/>`;
+      }
+      s += `<circle cx="200" cy="200" r="50" fill="${p.c2}" opacity="0.5"/>`;
+      s += `<circle cx="200" cy="200" r="25" fill="${p.c3}" opacity="0.8"/>`;
+      s += `<circle cx="200" cy="200" r="8" fill="${p.c3}"/>`;
+      s += `<ellipse cx="200" cy="200" rx="155" ry="155" fill="none" stroke="${p.c1}" stroke-width="0.5" stroke-dasharray="4,4"/>`;
+      return s;
+    },
+    volleyball: () => {
+      let s = `<line x1="40" y1="200" x2="360" y2="200" stroke="${p.c1}" stroke-width="1" opacity="0.5"/>`;
+      for (let i = 0; i < 5; i++) {
+        const x = 40 + i * 80;
+        s += `<circle cx="${x + 40}" cy="${180 + (i % 2) * 40}" r="22" fill="${p.c2}" opacity="0.5"/>`;
+        s += `<circle cx="${x + 40}" cy="${180 + (i % 2) * 40}" r="22" fill="none" stroke="${p.c3}" stroke-width="0.5"/>`;
+      }
+      s += `<circle cx="200" cy="120" r="35" fill="${p.c3}" opacity="0.7"/>`;
+      s += `<line x1="40" y1="60" x2="360" y2="60" stroke="${p.c3}" stroke-width="1.5" opacity="0.6"/>`;
+      const pts = [];
+      for (let i = 0; i < 5; i++) pts.push(`${60 + i * 70},${260 + (i % 2 ? -30 : 30)}`);
+      s += `<polyline points="${pts.join(' ')}" fill="none" stroke="${p.c1}" stroke-width="1" opacity="0.5"/>`;
+      return s;
+    },
+    pingpong: () => {
+      let s = `<line x1="30" y1="200" x2="370" y2="200" stroke="${p.c1}" stroke-width="0.5" opacity="0.3"/>`;
+      s += `<line x1="200" y1="30" x2="200" y2="370" stroke="${p.c1}" stroke-width="0.5" opacity="0.3"/>`;
+      s += `<polygon points="200,60 310,200 200,340 90,200" fill="${p.c1}" opacity="0.15" stroke="${p.c2}" stroke-width="0.5"/>`;
+      for (let i = 0; i < 8; i++) {
+        const a = i * (Math.PI / 4) + (Math.PI / 8), r = 80;
+        const x = (200 + r * Math.cos(a)).toFixed(1), y = (200 + r * Math.sin(a)).toFixed(1);
+        s += `<circle cx="${x}" cy="${y}" r="10" fill="${p.c2}" opacity="0.6"/>`;
+      }
+      s += `<circle cx="200" cy="200" r="30" fill="${p.c3}" opacity="0.8"/>`;
+      s += `<rect x="155" y="185" width="90" height="30" rx="4" fill="none" stroke="${p.c3}" stroke-width="0.5" transform="rotate(-20 200 200)"/>`;
+      return s;
+    },
+    swimming: () => {
+      let s = '';
+      for (let i = 0; i < 7; i++) {
+        const y = 50 + i * 52;
+        s += `<path d="M30,${y} Q100,${y - 20} 200,${y} Q300,${y + 20} 370,${y}" fill="none" stroke="${i % 2 === 0 ? p.c2 : p.c1}" stroke-width="${i % 3 === 0 ? 1.5 : 0.5}" opacity="${0.3 + i * 0.08}"/>`;
+      }
+      s += `<ellipse cx="200" cy="200" rx="60" ry="25" fill="${p.c3}" opacity="0.6"/>`;
+      s += `<ellipse cx="200" cy="200" rx="30" ry="12" fill="${p.c3}" opacity="0.9"/>`;
+      return s;
+    },
+    climbing: () => {
+      const holds = [[200,350],[160,300],[230,260],[180,210],[250,165],[200,120],[210,75]];
+      let s = '';
+      holds.forEach(([x, y], i) => {
+        if (i > 0) {
+          const [px, py] = holds[i - 1];
+          s += `<line x1="${px}" y1="${py}" x2="${x}" y2="${y}" stroke="${p.c1}" stroke-width="0.5" stroke-dasharray="3,4" opacity="0.5"/>`;
+        }
+        s += `<circle cx="${x}" cy="${y}" r="${i === holds.length - 1 ? 14 : 10}" fill="${i === holds.length - 1 ? p.c3 : p.c2}" opacity="${0.5 + i * 0.07}"/>`;
+      });
+      [[120,180],[290,220],[140,130],[270,100],[80,260],[320,290]].forEach(([x, y]) => {
+        s += `<circle cx="${x}" cy="${y}" r="7" fill="${p.c1}" opacity="0.3"/>`;
+      });
+      return s;
+    },
+    golf: () => {
+      let s = '';
+      for (let i = 0; i < 12; i++) {
+        const r = 30 + i * 12;
+        s += `<ellipse cx="200" cy="320" rx="${r}" ry="${r * 0.3}" fill="none" stroke="${p.c1}" stroke-width="0.5" opacity="${0.15 + i * 0.04}"/>`;
+      }
+      s += `<path d="M200,320 Q180,220 200,120 Q210,80 200,50" fill="none" stroke="${p.c2}" stroke-width="1"/>`;
+      s += `<circle cx="200" cy="50" r="12" fill="${p.c3}" opacity="0.8"/>`;
+      s += `<circle cx="200" cy="320" r="6" fill="${p.c3}"/>`;
+      for (let i = 0; i < 6; i++) {
+        const a = i * (Math.PI / 3);
+        s += `<circle cx="${(200 + 25 * Math.cos(a)).toFixed(1)}" cy="${(320 + 8 * Math.sin(a)).toFixed(1)}" r="3" fill="${p.c1}" opacity="0.4"/>`;
+      }
+      return s;
+    },
+    basketball: () => {
+      let s = `<circle cx="200" cy="200" r="130" fill="${p.c1}" opacity="0.2" stroke="${p.c2}" stroke-width="0.5"/>`;
+      s += `<path d="M70,200 Q200,100 330,200 Q200,300 70,200" fill="${p.c2}" opacity="0.3"/>`;
+      s += `<line x1="70" y1="200" x2="330" y2="200" stroke="${p.c2}" stroke-width="0.5" opacity="0.5"/>`;
+      s += `<circle cx="200" cy="200" r="40" fill="${p.c3}" opacity="0.6"/>`;
+      s += `<rect x="170" y="60" width="60" height="10" rx="3" fill="${p.c3}" opacity="0.7"/>`;
+      s += `<rect x="175" y="70" width="50" height="40" rx="2" fill="none" stroke="${p.c3}" stroke-width="1" opacity="0.6"/>`;
+      [[140,140],[260,140],[140,260],[260,260]].forEach(([x, y]) => {
+        s += `<circle cx="${x}" cy="${y}" r="6" fill="${p.c1}" opacity="0.5"/>`;
+      });
+      return s;
+    },
+    pickleball: () => {
+      let s = '';
+      for (let i = 0; i < 6; i++) {
+        const a = i * (Math.PI / 3), r = 120;
+        const x = (200 + r * Math.cos(a)).toFixed(1), y = (200 + r * Math.sin(a)).toFixed(1);
+        s += `<circle cx="${x}" cy="${y}" r="20" fill="${p.c2}" opacity="0.4"/>`;
+        s += `<line x1="200" y1="200" x2="${x}" y2="${y}" stroke="${p.c1}" stroke-width="0.5" opacity="0.3"/>`;
+      }
+      s += `<circle cx="200" cy="200" r="55" fill="${p.c1}" opacity="0.25" stroke="${p.c2}" stroke-width="0.5"/>`;
+      for (let i = 0; i < 20; i++) {
+        const a = i * (Math.PI / 10), r = 55;
+        s += `<circle cx="${(200 + r * Math.cos(a)).toFixed(1)}" cy="${(200 + r * Math.sin(a)).toFixed(1)}" r="4" fill="${p.c3}" opacity="0.7"/>`;
+      }
+      s += `<circle cx="200" cy="200" r="16" fill="${p.c3}"/>`;
+      return s;
+    },
+  };
+
+  const fn = draws[code] || draws.pickleball;
+  return svg(400, 400, `<rect width="400" height="400" fill="${p.bg}"/>${fn()}`);
+}
+
+// ─── Questions ───────────────────────────────────────────────────
+const QS = [
+  { ax:'CN', b:'你正在做一件事，有人主动加进来一起做。你没邀请他，但他也没有妨碍你。', h:'你最直接的感受是？',
+    os:[
+      { t:'还不错，有人一起更有意思', s:[2,0,0] },
+      { t:'可以，但会留意对方是什么状态', s:[1,0,0] },
+      { t:'有点打断了我的节奏，需要适应一下', s:[-1,0,0] },
+      { t:'我通常不太会遇到这种情况', s:[0,0,0], sub:'这也是一种答案' },
+    ]},
+  { ax:'CN', b:'你和一个人认识了很久，但从没深聊过。某天他突然跟你说了一些很私人的事。', h:'你的第一反应更接近哪种？',
+    os:[
+      { t:'有些受宠若惊，想好好回应', s:[2,0,0] },
+      { t:'认真听，但不确定自己该说什么', s:[1,0,1] },
+      { t:'有点惊讶，需要一点时间调整', s:[-1,0,1] },
+      { t:'我一般会先想他为什么选择在这个时候告诉我', s:[0,0,-1] },
+    ]},
+  { ax:'CN', b:'你参加一个群体活动，有个人一直没怎么融入，站在边缘。', h:'你更可能做什么？',
+    os:[
+      { t:'主动走过去，找个话头聊起来', s:[2,0,0] },
+      { t:'注意到了，但等一等，看情况再说', s:[0,0,0] },
+      { t:'觉得他可能需要一点空间，不去打扰', s:[-1,0,0] },
+      { t:'我有时候自己就是那个站在边缘的人', s:[-2,0,0] },
+    ]},
+  { ax:'CN', b:'你有没有过这种感觉：某段关系里你输出得多，对方输出得少，但你不觉得吃亏？', h:'',
+    os:[
+      { t:'有，给出东西本身就让我有满足感', s:[2,0,0] },
+      { t:'短期有，但时间长了还是会想是不是平衡的', s:[1,0,0] },
+      { t:'不太有，我比较在意关系里的对等', s:[-1,0,0] },
+      { t:'我不太用"输出多少"来衡量关系', s:[0,1,0] },
+    ]},
+  { ax:'CN', b:'你独自完成一件事，和和别人一起完成同一件事，体验上有没有明显的差别？', h:'说的是感受，不是效率。',
+    os:[
+      { t:'很不一样，一起做有种能量是独自没有的', s:[2,0,0] },
+      { t:'有差别，取决于一起做的是谁', s:[1,0,0] },
+      { t:'差别不大，我都能找到投入感', s:[0,0,0] },
+      { t:'独自做有时候更纯粹，更喜欢那种状态', s:[-2,0,0] },
+    ]},
+  { ax:'PS', b:'你正在做一件有截止时间的事，时间比你预期的要紧。', h:'你最可能的内部状态是？',
+    os:[
+      { t:'某种程度上反而更集中，压力让我清醒', s:[0,2,0] },
+      { t:'有些焦虑，但还是能推进', s:[0,1,0] },
+      { t:'开始怀疑之前的思路，想重来', s:[0,-1,1] },
+      { t:'我通常在这之前就已经完成了', s:[0,0,-2] },
+    ]},
+  { ax:'PS', b:'你遇到一件事，结果和你预期的完全不一样——可能更好，也可能更差。', h:'',
+    os:[
+      { t:'能接受，我对"意外"保持某种弹性', s:[0,2,0] },
+      { t:'需要一点时间消化，然后重新开始', s:[0,0,1] },
+      { t:'有些困扰，我倾向于提前想清楚，减少意外', s:[0,-1,0] },
+      { t:'看是什么性质的意外，反应会很不一样', s:[0,1,0] },
+    ]},
+  { ax:'PS', b:'你在做的事情出了一个问题，但这个问题你没办法立刻解决。', h:'最接近你反应的是？',
+    os:[
+      { t:'先把能做的部分做完，问题放在一边待处理', s:[0,2,0] },
+      { t:'想先弄清楚问题是怎么来的', s:[0,1,-1] },
+      { t:'这个问题会一直在后台运行，影响我的状态', s:[0,-1,1] },
+      { t:'找一个人说一说，说出来就轻了一半', s:[1,0,1] },
+    ]},
+  { ax:'PS', b:'有没有一种状态，让你感觉自己"运转得最好"？', h:'不一定是你喜欢的状态，是让你效率最高的状态。',
+    os:[
+      { t:'有点压力、有点不确定，但方向是清楚的', s:[0,2,0] },
+      { t:'事情清晰、步骤明确，我知道接下来做什么', s:[0,-1,-1] },
+      { t:'有人在一起，有协作，有反馈', s:[2,1,0] },
+      { t:'完全独立，不被打扰，按自己的节奏', s:[-2,0,0] },
+    ]},
+  { ax:'PS', b:'你接受了一个任务，开始之后发现它比你想的复杂得多。', h:'',
+    os:[
+      { t:'有点兴奋，复杂的事更有意思', s:[0,2,0] },
+      { t:'先停下来重新评估，看看能不能拆分', s:[0,0,-1] },
+      { t:'继续做，边做边找方向', s:[0,1,0] },
+      { t:'有些沉重，开始怀疑自己当初为什么接', s:[0,-2,1] },
+    ]},
+  { ax:'RP', b:'你有一段时间，几乎每天都在做同一件事。', h:'比如练一个技能、推进一个长期项目……',
+    os:[
+      { t:'找到了某种节奏，有时候甚至觉得平静', s:[0,0,-2] },
+      { t:'可以的，只要能看到进展', s:[0,1,-1] },
+      { t:'会有些乏，会想找点变化', s:[0,0,1] },
+      { t:'比较困难，我需要更多的切换', s:[0,0,2] },
+    ]},
+  { ax:'RP', b:'你有一天的时间可以完全自由支配，没有任何安排。', h:'你最自然的倾向是？',
+    os:[
+      { t:'大概想好要做什么，然后按自己的节奏进行', s:[0,0,-1] },
+      { t:'从某件想做的事开始，看它带我去哪里', s:[0,1,1] },
+      { t:'把它切成几段，不同时间做不同的事', s:[0,0,2] },
+      { t:'什么都不做，或者做一件事做很久', s:[-1,0,-2] },
+    ]},
+  { ax:'RP', b:'有没有过这种时刻：一件事你做了很久，某天突然感觉"够了"，想换一件事做？', h:'',
+    os:[
+      { t:'有，而且来得很突然，说换就换', s:[0,0,2] },
+      { t:'有，但我会先做完手上的再换', s:[0,0,0] },
+      { t:'不太有，我一般不容易感到"够了"', s:[0,0,-2] },
+      { t:'有，但"换"对我来说需要一段过渡期', s:[0,-1,1] },
+    ]},
+  { ax:'RP', b:'你更适应哪种工作或生活节奏？', h:'不是你觉得"应该"的，是实际更适合你的。',
+    os:[
+      { t:'有规律的节奏，每天大概知道接下来要做什么', s:[0,0,-2] },
+      { t:'有目标但方式灵活，节奏可以随情况调整', s:[0,1,0] },
+      { t:'变化多、刺激多，不太喜欢重复', s:[0,0,2] },
+      { t:'强度有高有低，深度工作之后需要真正的休息', s:[-1,0,0] },
+    ]},
+  { ax:'RP', b:'你在做一件让你很投入的事，有人来打断你。', h:'',
+    os:[
+      { t:'有点不情愿，但能切换过来', s:[0,0,0] },
+      { t:'明显感到节奏被打断，需要一段时间才能回来', s:[-1,0,-1] },
+      { t:'取决于打断的理由，有价值的打断我接受', s:[0,1,0] },
+      { t:'我很难真正进入那种"完全投入"的状态', s:[0,0,1] },
+    ]},
+];
+
+// ─── Types ───────────────────────────────────────────────────────
+const TYPES = {
+  badminton: {
+    sport:'羽毛球', en:'BADMINTON', sub:'精准 · 反应 · 一对一的连接',
+    color:'#534AB7',
+    desc1:'羽毛球的战场是两个人之间的气流，每一拍都是一个问题，等待一个回答。你的连接方式很像这项运动：你对"一对一"的关系有很高的敏感度，能在很短的时间内读懂对方的状态，然后用刚刚好的方式回应。你不是那种喜欢群体热闹的人，你更在意那一两个真正"打来打去"的人。',
+    desc2:'在压力下，你倾向于用速度和直觉代替计划——你的优势是反应快，但这也意味着你有时候在还没想清楚之前就已经落子了。你的节奏是高度专注的，不太适合长时间的模糊状态，你需要来回，需要即时的反馈，才能维持那种投入感。',
+    light:'读人快、反应准，在一对一的关系和情境里非常有力',
+    shadow:'在没有即时反馈的情况下容易失去投入感，不确定是否被接住时会感到悬空',
+    traits:['精准连接','快速读人','一对一敏感','直觉驱动','需要回响','反应型专注'],
+  },
+  volleyball: {
+    sport:'排球', en:'VOLLEYBALL', sub:'传递 · 信任 · 集体节奏',
+    color:'#BA7517',
+    desc1:'排球是一项没有人能独自完成的运动——球不落地，靠的是每个人都在位置上，每个人都信任旁边的人会接住。你的存在方式和这个很像：你不是那种喜欢独自扛着所有事的人，你更自然的状态是在一个系统里，找到自己的位置，然后把东西传出去。',
+    desc2:'你在压力下有一种有趣的特质：当情况明朗时你能精准执行，但当局势混乱时，你更擅长维持关系的稳定，而不是单独做出决策。你的节奏是协作性的——你需要来自他人的能量，也很善于把这种能量传递出去。你是那种让团队不散架的人。',
+    light:'善于在集体中找到位置，是让整个系统顺畅运转的关键节点',
+    shadow:'在没有明确角色和协作对象时，容易感到悬浮——你需要"传给谁"',
+    traits:['协作直觉','传递型能量','信任他人','位置感强','团队节奏','不抢也不缺位'],
+  },
+  pingpong: {
+    sport:'乒乓球', en:'TABLE TENNIS', sub:'速度 · 策略 · 小空间里的大博弈',
+    color:'#0F6E56',
+    desc1:'乒乓球的球台很小，但博弈的密度极高。每一拍都是一个决策，速度快到你没有时间"想清楚"——你只能让判断变成本能。你的运作方式很像这个：你思维快，切换快，在高频的来回中反而更清醒。你对细节有一种近乎本能的感知，能在别人还没反应过来的时候就看到机会在哪里。',
+    desc2:'你在压力下的典型状态是"越紧越准"。你的节奏喜欢变化，节奏太单一会让你失去兴趣。你不是那种需要大舞台的人，你更喜欢那种小而密的空间——两个人，一张桌子，你来我往，每一局都是全新的。',
+    light:'快速思维，高压下清醒，极强的即时决策能力',
+    shadow:'有时候快到跳过了"停下来真正感受"的步骤，节奏太密时容易忽视更慢的信号',
+    traits:['快速切换','高频决策','细节敏感','变化驱动','即时本能','小空间的高密度'],
+  },
+  swimming: {
+    sport:'游泳', en:'SWIMMING', sub:'节律 · 独自前行 · 向内的力量',
+    color:'#185FA5',
+    desc1:'游泳是一项非常孤独的运动——水里没有对话，只有你和水的阻力，你和自己的呼吸节奏。优秀的游泳者不是最用力的，而是最能和水和解的那个。你的运作方式有这种特质：你能在独处中找到力量，你的稳定性来自内部，而不是来自外界的认可或反馈。',
+    desc2:'你在压力下倾向于向内收——减少输出，保持节律，等待水面平静。你不一定是回避，更多是一种自我保护和整合的机制。你的节奏是长周期的，你能做很久同一件事而不感到厌倦，因为你在那个重复里找到了某种流动感。',
+    light:'内在稳定，耐力型，能在漫长的过程里保持清醒和方向',
+    shadow:'有时候太习惯独自承担，外界难以看见你正在经历什么，也不知道如何靠近',
+    traits:['向内的稳定','节律感','独处自给','长线专注','低外显','和自己的关系'],
+  },
+  climbing: {
+    sport:'攀岩', en:'CLIMBING', sub:'路径 · 重力 · 一个问题一个问题地解',
+    color:'#993C1D',
+    desc1:'攀岩是一项把问题变成路径的运动。每一个岩点都是一个决策，没有两条完全一样的路线，你必须一直在思考——但不是抽象的思考，是非常具体的、身体参与的、"下一步能不能够到"的思考。你对问题有一种接近的渴望，你喜欢把复杂的事拆开，一个一个地爬过去。',
+    desc2:'你在压力下的特质是专注。当情况变难，你不是更慌，而是更静——把注意力收进来，只看眼前这一步。你的节奏是深度而非广度：你不需要很多事情同时发生，你需要一件事可以被真正想透、真正完成。',
+    light:'拆解问题的能力强，在高难度情境下反而更集中',
+    shadow:'太投入某条路径有时会让你忽略有没有更好的路——有时候要先松手才能找到下一个落点',
+    traits:['问题导向','深度专注','逐步拆解','独立判断','压力下收敛','路径思维'],
+  },
+  golf: {
+    sport:'高尔夫', en:'GOLF', sub:'长线 · 精度 · 与自己的对话',
+    color:'#3B6D11',
+    desc1:'高尔夫的对手不是别人，是地形，是风，是你自己昨天留下的习惯。一击球是一整套关于距离、角度、力度的判断，但它的前提是你能在击球之前把头脑里的一切清空，只剩下这一杆。你有一种很像这项运动的特质：你是长线思维的，你不焦虑于当下，你更在意整体的走向和准度。',
+    desc2:'你在压力下的状态是"退一步"——不是逃避，而是需要空间来校准。你的节奏是慢而精的，你不喜欢被催，不喜欢仓促的决定，你需要时间让判断成熟。你是那种在别人还在热闹的时候已经在想第三步的人。',
+    light:'长线眼光，精度思维，不被当下的噪音影响大局',
+    shadow:'节奏太慢时容易错过需要立即反应的时刻，有时候分析比行动快',
+    traits:['长线视角','精度优先','退步校准','独立判断','不被催促','走在节奏里'],
+  },
+  basketball: {
+    sport:'篮球', en:'BASKETBALL', sub:'场面 · 即兴 · 在人群里发光',
+    color:'#993556',
+    desc1:'篮球是一项实时生成的运动——没有固定的剧本，只有不断变化的局面，和你在这个局面里的判断。在球场上那种混乱里找到机会，在人群里传出一个意想不到的球，这是篮球最令人兴奋的部分。你在高密度的社交和变化中有一种类似的生命力：你不怕乱，你甚至需要某种程度的乱，才能激活自己。',
+    desc2:'你在压力下倾向于加速而不是暂停，行动比计划快，你相信"动起来再说"。你的节奏喜欢变化，节奏太单一让你坐不住。你在群体里有一种自然的存在感——不一定是最高的那个，但总是在场的那个。',
+    light:'高度适应变化，在混乱里能快速找到节奏，群体中有感染力',
+    shadow:'节奏太快时容易跳过需要安静的时刻，有时候不确定自己是在前进还是在消耗',
+    traits:['场面感','即兴判断','群体能量','行动优先','变化需求','在场感'],
+  },
+  pickleball: {
+    sport:'匹克球', en:'PICKLEBALL', sub:'适度 · 智慧 · 刚刚好的连接',
+    color:'#5F5E5A',
+    desc1:'匹克球是一项年轻人和老人都能一起打的运动——它的魅力不在于极限速度，而在于那种刚刚好的来回。它的球场比网球小，节奏比乒乓球慢，但博弈的精度一点不低。你有一种类似的特质：你不需要把所有事情都推到极致，你更擅长找到那个"够了"的节点——关系里、工作里、对自己的期待里。',
+    desc2:'你在压力下不是靠强度赢的，而是靠节奏和位置感——你知道什么时候要进，什么时候要退。你的连接方式是温暖但有边界的：你喜欢人，你也需要空间，你不拒绝深度，但你不会为了深度而消耗自己。你是那种让人觉得刚好的人。',
+    light:'有边界的温暖，懂得适度，在关系里舒适而不消耗',
+    shadow:'有时候"刚刚好"是一种自我保护，会让真正需要投入的时刻停在门口',
+    traits:['有边界的开放','适度感','智慧型连接','节奏意识','温和抗压','刚刚好'],
+  },
+};
+
+// ─── Logic ───────────────────────────────────────────────────────
+function classify(sc) {
+  const [cn, ps, rp] = sc;
+  const open = cn >= 0, stable = ps >= 0, focus = rp <= 0;
+  if ( open &&  stable &&  focus) return 'badminton';
+  if ( open &&  stable && !focus) return 'volleyball';
+  if ( open && !stable && !focus) return 'pingpong';
+  if (!open &&  stable &&  focus) return 'swimming';
+  if (!open && !stable &&  focus) return 'climbing';
+  if (!open &&  stable && !focus) return 'golf';
+  if ( open && !stable &&  focus) return 'basketball';
+  return 'pickleball';
+}
+
+function calcPcts(sc) {
+  return sc.map((v, i) => Math.round(Math.min(100, Math.max(0, (v + 10) / 20 * 100))));
+}
+
+function calcSc() {
+  const sc = [0, 0, 0];
+  Object.values(ST.ans).forEach(v => { sc[0] += v[0]; sc[1] += v[1]; sc[2] += v[2]; });
+  return sc;
+}
+
+// ─── State & Render ──────────────────────────────────────────────
+let ST = { cur: 0, ans: {}, result: null };
+
+function show(id) {
+  ['s0', 's1', 's2'].forEach(s => document.getElementById(s).classList.toggle('on', s === id));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderQ() {
+  const q = QS[ST.cur];
+  const pct = Math.round(ST.cur / QS.length * 100);
+  document.getElementById('pf').style.width = pct + '%';
+  document.getElementById('ptxt').textContent = (ST.cur + 1) + ' / ' + QS.length;
+  document.getElementById('qa').innerHTML = qArt(q.ax, ST.cur);
+  document.getElementById('qn').textContent = String(ST.cur + 1).padStart(2, '0') + ' / ' + QS.length;
+  document.getElementById('qb').textContent = q.b;
+  document.getElementById('qh').textContent = q.h;
+  const saved = ST.ans[ST.cur];
+  document.getElementById('oc').innerHTML = q.os.map((o, i) => `
+    <button class="opt${saved === i ? ' sel' : ''}" data-i="${i}">
+      <div class="opt-key">${String.fromCharCode(65 + i)}</div>
+      <div>
+        <div class="opt-t">${o.t}</div>
+        ${o.sub ? `<div class="opt-s">${o.sub}</div>` : ''}
+      </div>
+    </button>`).join('');
+  document.getElementById('pBtn').disabled = ST.cur === 0;
+  document.getElementById('nBtn').disabled = saved === undefined;
+  document.getElementById('nBtn').textContent = ST.cur === QS.length - 1 ? '查看结果' : '继续 →';
+  document.querySelectorAll('.opt').forEach(b => b.addEventListener('click', () => {
+    ST.ans[ST.cur] = parseInt(b.dataset.i);
+    renderQ();
+  }));
+}
+
+function renderR() {
+  const sc = calcSc();
+  const code = classify(sc);
+  const pcts = calcPcts(sc);
+  const T = TYPES[code];
+  ST.result = { code, T, sc };
+
+  document.getElementById('rc').innerHTML = `
+    <div class="r-hero">
+      <div class="r-art">${typeArt(code)}</div>
+      <div class="r-meta">
+        <div class="r-sport">SPTI · ${T.en}</div>
+        <div class="r-name">${T.sport}</div>
+        <div class="r-sub">${T.sub}</div>
+        <div class="axes">
+          ${[['连接方式','封闭','开放',pcts[0],T.color],
+             ['压力结构','回避','抗压',pcts[1],T.color],
+             ['节奏模式','专注','多变',pcts[2],T.color]].map(([n,l,r,p,c]) => `
+          <div class="ax-row">
+            <div class="ax-l">${l}</div>
+            <div class="ax-tr"><div class="ax-fi" style="width:${p}%;background:${c}"></div></div>
+            <div class="ax-r">${r}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="desc-block">
+      <p class="desc-p">${T.desc1}</p>
+      <p class="desc-p">${T.desc2}</p>
+    </div>
+    <div class="dual">
+      <div class="dc"><div class="dc-l">光面</div><div class="dc-t">${T.light}</div></div>
+      <div class="dc"><div class="dc-l">暗面</div><div class="dc-t">${T.shadow}</div></div>
+    </div>
+    <div class="traits">${T.traits.map(t => `<div class="trait">${t}</div>`).join('')}</div>
+  `;
+  document.getElementById('ptxt').textContent = '';
+}
+
+// ─── Share ───────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+document.getElementById('shareBtn').addEventListener('click', () => {
+  const url = window.location.href.split('?')[0];
+  if (navigator.share) {
+    navigator.share({ title: 'SPTI 运动人格测试', text: `我的 SPTI 结果是「${ST.result?.T.sport}」，来测测你是哪种运动？`, url });
+  } else {
+    navigator.clipboard.writeText(url).then(() => showToast('链接已复制'));
+  }
+});
+
+document.getElementById('copyBtn').addEventListener('click', () => {
+  if (!ST.result) return;
+  const { T } = ST.result;
+  const text = `我的 SPTI 运动人格是「${T.sport}」\n${T.sub}\n\n${T.desc1.slice(0, 60)}……\n\n来测测你是哪种运动？`;
+  navigator.clipboard.writeText(text).then(() => showToast('已复制，去分享吧'));
+});
+
+// ─── Event listeners ─────────────────────────────────────────────
+document.getElementById('sBtn').addEventListener('click', () => {
+  ST = { cur: 0, ans: {}, result: null };
+  show('s1');
+  renderQ();
+});
+document.getElementById('pBtn').addEventListener('click', () => {
+  if (ST.cur > 0) { ST.cur--; renderQ(); }
+});
+document.getElementById('nBtn').addEventListener('click', () => {
+  if (ST.ans[ST.cur] === undefined) return;
+  if (ST.cur === QS.length - 1) { show('s2'); renderR(); }
+  else { ST.cur++; renderQ(); }
+});
+document.getElementById('rBtn').addEventListener('click', () => {
+  ST = { cur: 0, ans: {}, result: null };
+  show('s0');
+  document.getElementById('ptxt').textContent = '';
+});
+
+// ─── Init ────────────────────────────────────────────────────────
+document.getElementById('ia').innerHTML = introArt();
+</script>
+</body>
+</html>
