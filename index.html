@@ -605,7 +605,13 @@ const TYPES = {
 // ─── Logic ───────────────────────────────────────────────────────
 function classify(sc) {
   const [cn, ps, rp] = sc;
-  const open = cn >= 0, stable = ps >= 0, focus = rp <= 0;
+  // CN: range ~-12 to 13, midpoint ~0.5
+  // PS: range ~-7 to 15, midpoint ~4
+  // RP: range ~-15 to 14, midpoint ~-0.5
+  const open   = cn > 0;          // positive = open/social
+  const stable = ps > 3;          // shifted mid: high ps = stable under pressure
+  const focus  = rp < 0;          // negative = focused/consistent rhythm
+
   if ( open &&  stable &&  focus) return 'badminton';
   if ( open &&  stable && !focus) return 'volleyball';
   if ( open && !stable && !focus) return 'pingpong';
@@ -613,11 +619,18 @@ function classify(sc) {
   if (!open && !stable &&  focus) return 'climbing';
   if (!open &&  stable && !focus) return 'golf';
   if ( open && !stable &&  focus) return 'basketball';
-  return 'pickleball';
+  return 'pickleball';  // !open && !stable && !focus
 }
 
 function calcPcts(sc) {
-  return sc.map((v, i) => Math.round(Math.min(100, Math.max(0, (v + 10) / 20 * 100))));
+  // CN: -12~13 → normalize with actual range
+  // PS: -7~15 → normalize
+  // RP: -15~14 → normalize
+  const ranges = [[-12, 13], [-7, 15], [-15, 14]];
+  return sc.map((v, i) => {
+    const [min, max] = ranges[i];
+    return Math.round(Math.min(100, Math.max(0, (v - min) / (max - min) * 100)));
+  });
 }
 
 function calcSc() {
